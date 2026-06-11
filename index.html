@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flipkart Review Link Generator</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#778cad,#adc7f1);
+    padding:20px;
+}
+
+.container{
+    width:100%;
+    max-width:750px;
+    background:white;
+    padding:35px;
+    border-radius:20px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.2);
+}
+
+.logo{
+    text-align:center;
+    font-size:2rem;
+    font-weight:700;
+    color:#2874f0;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#666;
+    margin-bottom:30px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+    color:#333;
+}
+
+.input-group{
+    margin-bottom:20px;
+}
+
+input,
+textarea{
+    width:100%;
+    padding:14px;
+    border:2px solid #e5e7eb;
+    border-radius:12px;
+    outline:none;
+    transition:0.3s;
+    font-size:15px;
+}
+
+input:focus,
+textarea:focus{
+    border-color:#2874f0;
+    box-shadow:0 0 0 4px rgba(40,116,240,.15);
+}
+
+textarea{
+    resize:none;
+    height:130px;
+}
+
+.buttons{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+    padding:14px 22px;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:600;
+    transition:0.3s;
+}
+
+.generate-btn{
+    background:#2874f0;
+    color:white;
+}
+
+.generate-btn:hover{
+    background:#1f63d3;
+    transform:translateY(-2px);
+}
+
+.copy-btn{
+    background:#10b981;
+    color:white;
+}
+
+.copy-btn:hover{
+    background:#0f9f70;
+    transform:translateY(-2px);
+}
+
+.success{
+    margin-top:15px;
+    color:#10b981;
+    font-weight:600;
+    display:none;
+}
+
+.footer{
+    margin-top:20px;
+    text-align:center;
+    color:#777;
+    font-size:13px;
+}
+
+@media(max-width:600px){
+    .container{
+        padding:25px;
+    }
+
+    .buttons{
+        flex-direction:column;
+    }
+
+    button{
+        width:100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        🛒 Flipkart Review Link Generator
+    </div>
+
+    <div class="subtitle">
+        Generate review URLs instantly from Flipkart product links
+    </div>
+
+    <div class="input-group">
+        <label>Product URL</label>
+        <input
+            type="text"
+            id="productUrl"
+            placeholder="Paste Flipkart Product URL here..."
+        >
+    </div>
+
+    <div class="buttons">
+        <button class="generate-btn" onclick="generateReviewLink()">
+            Generate Review Link
+        </button>
+
+        <button class="copy-btn" onclick="copyLink()">
+            Copy Link
+        </button>
+    </div>
+
+    <br>
+
+    <div class="input-group">
+        <label>Generated Review URL</label>
+        <textarea id="output" readonly></textarea>
+    </div>
+
+    <div id="successMessage" class="success">
+        ✅ Review link copied successfully!
+    </div>
+
+    <div class="footer">
+        Built for Flipkart Product Review URL Generation
+    </div>
+
+</div>
+
+<script>
+
+function generateReviewLink() {
+
+    const url = document.getElementById("productUrl").value.trim();
+
+    if(!url){
+        alert("Please enter a Flipkart product URL.");
+        return;
+    }
+
+    try {
+
+        const parsedUrl = new URL(url);
+
+        const pathParts = parsedUrl.pathname.split("/");
+
+        const slug = pathParts[pathParts.length - 3];
+        const itemId = pathParts[pathParts.length - 1];
+
+        const pid = parsedUrl.searchParams.get("pid");
+        const lid = parsedUrl.searchParams.get("lid");
+
+        if(!pid || !lid || !itemId){
+            throw new Error();
+        }
+
+        const reviewUrl =
+            `https://www.flipkart.com/${slug}/write-review/${itemId}?pid=${pid}&lid=${lid}&source=od_sum&otracker=orders`;
+
+        document.getElementById("output").value = reviewUrl;
+
+    }
+    catch(error){
+
+        document.getElementById("output").value =
+            "❌ Invalid Flipkart Product URL";
+    }
+}
+
+function copyLink(){
+
+    const output =
+        document.getElementById("output").value;
+
+    if(!output){
+        return;
+    }
+
+    navigator.clipboard.writeText(output);
+
+    const success =
+        document.getElementById("successMessage");
+
+    success.style.display = "block";
+
+    setTimeout(()=>{
+        success.style.display = "none";
+    },2000);
+}
+
+document
+.getElementById("productUrl")
+.addEventListener("keypress", function(e){
+
+    if(e.key === "Enter"){
+        generateReviewLink();
+    }
+});
+
+</script>
+
+</body>
+</html>
