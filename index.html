@@ -192,9 +192,7 @@
 
         <div class="header">
 
-            <img class="flipkart-logo"
-                src="assets/Flipkart_Logo.png"
-                alt="Flipkart Logo">
+            <img class="flipkart-logo" src="assets/Flipkart_Logo.png" alt="Flipkart Logo">
 
             <div class="logo">
                 🛒 Review Link Generator
@@ -206,21 +204,39 @@
 
         </div>
 
-        <div class="input-group">
+        <!-- <div class="input-group">
             <label>Product URL</label>
-            <input id="productUrl"
-                type="text"
-                placeholder="Paste Flipkart Product URL here...">
-        </div>
+            <input id="productUrl" type="text" placeholder="Paste Flipkart Product URL here...">
+        </div> -->
 
-        <div class="buttons">
-
-            <button class="generate-btn"
-                onclick="generateReviewLink()">
-                ⚡ Generate Link
+        <div class="buttons" style="margin-top:15px;">
+            <button id="singleModeBtn" onclick="showSingleMode()">
+                Single Link
             </button>
 
+            <button id="bulkModeBtn" onclick="showBulkMode()">
+                Multiple Links
+            </button>
         </div>
+
+        <div id="singleMode" style="display:block; padding-bottom: 30px">
+            <div class="input-group">
+                <label>Product URL</label>
+                <input id="productUrl" type="text" placeholder="Paste Flipkart Product URL here...">
+            </div>
+        </div>
+
+        <div id="bulkMode" style="display:none; padding-bottom: 30px">
+            <div class="input-group">
+                <label>Multiple Product URLs (One Per Line)</label>
+                <textarea id="bulkUrls" placeholder="Paste multiple Flipkart URLs here..."
+                    style="height:200px; ;" ></textarea>
+            </div>
+        </div>
+
+        <button class="generate-btn" onclick="generateLinks()">
+            ⚡ Generate Review Link(s)
+        </button>
 
         <div class="input-group">
 
@@ -230,7 +246,8 @@
                 <textarea id="output" readonly style="flex:1;height:150px;"></textarea>
 
                 <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-                    <button class="copy-btn" onclick="copyLink()" style="padding:12px 14px;min-width:140px;">📋 Copy Generated Link</button>
+                    <button class="copy-btn" onclick="copyLink()" style="padding:12px 14px;min-width:140px;">📋 Copy
+                        Generated Link</button>
                     <div id="successMessage" class="success" style="display:none;margin:0">✅ Link copied!</div>
                 </div>
             </div>
@@ -239,11 +256,90 @@
 
         <div id="qrcode"></div>
 
-        
+
 
     </div>
 
     <script>
+
+        let currentMode = "single";
+
+        function showSingleMode() {
+            currentMode = "single";
+            document.getElementById("singleMode").style.display = "block";
+            document.getElementById("bulkMode").style.display = "none";
+        }
+
+        function showBulkMode() {
+            currentMode = "bulk";
+            document.getElementById("singleMode").style.display = "none";
+            document.getElementById("bulkMode").style.display = "block";
+        }
+
+        function convertToReviewLink(url) {
+
+            try {
+
+                const parsedUrl = new URL(url.trim());
+
+                const pathParts = parsedUrl.pathname.split("/");
+
+                const slug = pathParts[pathParts.length - 3];
+                const itemId = pathParts[pathParts.length - 1];
+
+                const pid = parsedUrl.searchParams.get("pid");
+                const lid = parsedUrl.searchParams.get("lid");
+
+                if (!pid || !lid || !itemId) {
+                    return null;
+                }
+
+                return `https://www.flipkart.com/${slug}/write-review/${itemId}?pid=${pid}&lid=${lid}&source=od_sum&otracker=orders`;
+
+            } catch {
+                return null;
+            }
+        }
+
+        function generateLinks() {
+
+            if (currentMode === "single") {
+
+                const url =
+                    document.getElementById("productUrl").value.trim();
+
+                const reviewLink =
+                    convertToReviewLink(url);
+
+                document.getElementById("output").value =
+                    reviewLink || "❌ Invalid Product URL";
+
+            } else {
+
+                const urls =
+                    document.getElementById("bulkUrls")
+                        .value
+                        .split("\n")
+                        .filter(url => url.trim());
+
+                const results = [];
+
+                urls.forEach(url => {
+
+                    const reviewLink =
+                        convertToReviewLink(url);
+
+                    results.push(
+                        reviewLink ||
+                        `❌ Invalid URL: ${url}`
+                    );
+
+                });
+
+                document.getElementById("output").value =
+                    results.join("\n\n");
+            }
+        }
 
         function generateReviewLink() {
 
