@@ -131,6 +131,7 @@
         .generate-btn {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
+            width: 100%;
         }
 
         .copy-btn {
@@ -162,6 +163,7 @@
             text-align: center;
             color: #94a3b8;
             font-size: 13px;
+            padding-bottom: 10px;
         }
 
         @media(max-width:700px) {
@@ -191,7 +193,7 @@
         <div class="header">
 
             <img class="flipkart-logo"
-                src="https://logos-world.net/wp-content/uploads/2020/11/Flipkart-Logo.png"
+                src="assets/Flipkart_Logo.png"
                 alt="Flipkart Logo">
 
             <div class="logo">
@@ -215,12 +217,7 @@
 
             <button class="generate-btn"
                 onclick="generateReviewLink()">
-                ⚡ Generate & Open
-            </button>
-
-            <button class="copy-btn"
-                onclick="copyLink()">
-                📋 Copy Link
+                ⚡ Generate Link
             </button>
 
         </div>
@@ -229,14 +226,15 @@
 
             <label>Generated Review URL</label>
 
-            <textarea id="output"
-                readonly></textarea>
+            <div style="display:flex;gap:12px;align-items:flex-start;margin-top:8px;">
+                <textarea id="output" readonly style="flex:1;height:150px;"></textarea>
 
-        </div>
+                <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+                    <button class="copy-btn" onclick="copyLink()" style="padding:12px 14px;min-width:140px;">📋 Copy Generated Link</button>
+                    <div id="successMessage" class="success" style="display:none;margin:0">✅ Link copied!</div>
+                </div>
+            </div>
 
-        <div id="successMessage"
-            class="success">
-            ✅ Link copied successfully!
         </div>
 
         <div id="qrcode"></div>
