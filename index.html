@@ -22,6 +22,8 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
+            overflow: hidden;
 
             background:
                 radial-gradient(circle at top left, #1e3a8a, transparent 40%),
@@ -29,9 +31,24 @@
                 #0f172a;
         }
 
+        body::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("assets/flipkart-1.png");
+            background-repeat: no-repeat;
+            background-position: right center;
+            background-size: cover;
+            opacity: 0.16;
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .container {
             width: 100%;
             max-width: 850px;
+            position: relative;
+            z-index: 1;
 
             background: rgba(17, 24, 39, 0.92);
             backdrop-filter: blur(20px);
@@ -104,6 +121,49 @@
         textarea {
             resize: none;
             height: 120px;
+            scrollbar-width: thin;
+            scrollbar-color: #3b82f6 #111827;
+        }
+
+        textarea::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background: #111827;
+            border-radius: 999px;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #60a5fa, #2563eb);
+            border-radius: 999px;
+            border: 2px solid #111827;
+        }
+
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #93c5fd, #3b82f6);
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #3b82f6 #0f172a;
+        }
+
+        html::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #60a5fa, #2563eb);
+            border-radius: 999px;
+        }
+
+        html::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #93c5fd, #3b82f6);
         }
 
         .buttons {
@@ -209,29 +269,10 @@
             <input id="productUrl" type="text" placeholder="Paste Flipkart Product URL here...">
         </div> -->
 
-        <div class="buttons" style="margin-top:15px;">
-            <button id="singleModeBtn" onclick="showSingleMode()">
-                Single Link
-            </button>
-
-            <button id="bulkModeBtn" onclick="showBulkMode()">
-                Multiple Links
-            </button>
-        </div>
-
-        <div id="singleMode" style="display:block; padding-bottom: 30px">
-            <div class="input-group">
-                <label>Product URL</label>
-                <input id="productUrl" type="text" placeholder="Paste Flipkart Product URL here...">
-            </div>
-        </div>
-
-        <div id="bulkMode" style="display:none; padding-bottom: 30px">
-            <div class="input-group">
-                <label>Multiple Product URLs (One Per Line)</label>
-                <textarea id="bulkUrls" placeholder="Paste multiple Flipkart URLs here..."
-                    style="height:200px; ;" ></textarea>
-            </div>
+        <div class="input-group" style="padding-bottom: 30px">
+            <label>Multiple Product URLs (One Per Line)</label>
+            <textarea id="bulkUrls" placeholder="Paste multiple Flipkart URLs here..."
+                style="height:200px;"></textarea>
         </div>
 
         <button class="generate-btn" onclick="generateLinks()">
@@ -262,20 +303,6 @@
 
     <script>
 
-        let currentMode = "single";
-
-        function showSingleMode() {
-            currentMode = "single";
-            document.getElementById("singleMode").style.display = "block";
-            document.getElementById("bulkMode").style.display = "none";
-        }
-
-        function showBulkMode() {
-            currentMode = "bulk";
-            document.getElementById("singleMode").style.display = "none";
-            document.getElementById("bulkMode").style.display = "block";
-        }
-
         function convertToReviewLink(url) {
 
             try {
@@ -302,92 +329,42 @@
         }
 
         function generateLinks() {
+            const urls =
+                document.getElementById("bulkUrls")
+                    .value
+                    .split("\n")
+                    .filter(url => url.trim());
 
-            if (currentMode === "single") {
-
-                const url =
-                    document.getElementById("productUrl").value.trim();
-
-                const reviewLink =
-                    convertToReviewLink(url);
-
-                document.getElementById("output").value =
-                    reviewLink || "❌ Invalid Product URL";
-
-            } else {
-
-                const urls =
-                    document.getElementById("bulkUrls")
-                        .value
-                        .split("\n")
-                        .filter(url => url.trim());
-
-                const results = [];
-
-                urls.forEach(url => {
-
-                    const reviewLink =
-                        convertToReviewLink(url);
-
-                    results.push(
-                        reviewLink ||
-                        `❌ Invalid URL: ${url}`
-                    );
-
-                });
-
-                document.getElementById("output").value =
-                    results.join("\n\n");
-            }
-        }
-
-        function generateReviewLink() {
-
-            const url =
-                document.getElementById("productUrl").value.trim();
-
-            if (!url) {
-                alert("Please enter a product URL");
+            if (urls.length === 0) {
+                document.getElementById("output").value = "❌ Please enter at least one product URL";
                 return;
             }
 
-            try {
+            const results = [];
 
-                const parsedUrl = new URL(url);
+            urls.forEach(url => {
+                const reviewLink = convertToReviewLink(url);
+                results.push(reviewLink || `❌ Invalid URL: ${url}`);
+            });
 
-                const pathParts =
-                    parsedUrl.pathname.split("/");
+            const generatedText = results.join("\n\n");
+            document.getElementById("output").value = generatedText;
 
-                const slug =
-                    pathParts[pathParts.length - 3];
-
-                const itemId =
-                    pathParts[pathParts.length - 1];
-
-                const pid =
-                    parsedUrl.searchParams.get("pid");
-
-                const lid =
-                    parsedUrl.searchParams.get("lid");
-
-                if (!pid || !lid || !itemId) {
-                    throw new Error();
-                }
-
-                const reviewUrl =
-                    `https://www.flipkart.com/${slug}/write-review/${itemId}?pid=${pid}&lid=${lid}&source=od_sum&otracker=orders`;
-
-                document.getElementById("output").value =
-                    reviewUrl;
-
-            }
-            catch {
-
-                document.getElementById("output").value =
-                    "❌ Invalid Product URL";
-
-                document.getElementById("qrcode").innerHTML = "";
-            }
+            navigator.clipboard.writeText(generatedText).then(() => {
+                const success = document.getElementById("successMessage");
+                success.style.display = "block";
+                setTimeout(() => {
+                    success.style.display = "none";
+                }, 2000);
+            }).catch(() => {
+                const success = document.getElementById("successMessage");
+                success.textContent = "⚠️ Copy failed";
+                success.style.display = "block";
+                setTimeout(() => {
+                    success.textContent = "✅ Link copied!";
+                    success.style.display = "none";
+                }, 2000);
+            });
         }
 
         function copyLink() {
@@ -422,16 +399,6 @@
                 }
             );
         }
-
-        document
-            .getElementById("productUrl")
-            .addEventListener("keypress", function (e) {
-
-                if (e.key === "Enter") {
-                    generateReviewLink();
-                }
-
-            });
 
     </script>
 
