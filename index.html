@@ -17,13 +17,15 @@
         }
 
         body {
-            min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            align-items: flex-start;
+            padding: 16px 16px 24px;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
 
             background:
                 radial-gradient(circle at top left, #1e3a8a, transparent 40%),
@@ -45,8 +47,8 @@
         }
 
         .container {
-            width: 100%;
-            max-width: 850px;
+            width: min(100%, 760px);
+            margin: 0 auto;
             position: relative;
             z-index: 1;
 
@@ -54,30 +56,44 @@
             backdrop-filter: blur(20px);
 
             border: 1px solid rgba(255, 255, 255, 0.08);
-
             border-radius: 24px;
-
-            padding: 35px;
+            padding: 22px;
 
             box-shadow:
                 0 20px 60px rgba(0, 0, 0, 0.5),
                 0 0 40px rgba(59, 130, 246, 0.15);
 
             color: white;
+            animation: fadeInUp 0.6s ease both;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 24px 70px rgba(0, 0, 0, 0.55),
+                0 0 45px rgba(59, 130, 246, 0.18);
+            border-color: rgba(96, 165, 250, 0.25);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
 
         .flipkart-logo {
-            height: 60px;
+            height: 48px;
             margin-bottom: 10px;
+            transition: transform 0.25s ease, filter 0.25s ease;
+        }
+
+        .flipkart-logo:hover {
+            transform: scale(1.03);
+            filter: drop-shadow(0 8px 20px rgba(59, 130, 246, 0.28));
         }
 
         .logo {
-            font-size: 2rem;
+            font-size: 1.7rem;
             font-weight: 700;
             color: #60a5fa;
         }
@@ -94,13 +110,13 @@
         }
 
         .input-group {
-            margin-top: 25px;
+            margin-top: 18px;
         }
 
         input,
         textarea {
             width: 100%;
-            padding: 16px;
+            padding: 13px 14px;
             background: #111827;
             color: white;
 
@@ -108,8 +124,14 @@
             border-radius: 14px;
 
             outline: none;
-            transition: .3s;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
             font-size: 15px;
+        }
+
+        input:hover,
+        textarea:hover {
+            transform: translateY(-1px);
+            border-color: #60a5fa;
         }
 
         input:focus,
@@ -120,7 +142,7 @@
 
         textarea {
             resize: none;
-            height: 120px;
+            height: 100px;
             scrollbar-width: thin;
             scrollbar-color: #3b82f6 #111827;
         }
@@ -176,16 +198,19 @@
         button {
             flex: 1;
             border: none;
-            padding: 15px;
+            padding: 13px;
             border-radius: 14px;
             cursor: pointer;
             font-weight: 700;
-            transition: .3s;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
             min-width: 150px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
         }
 
         button:hover {
             transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
+            filter: brightness(1.04);
         }
 
         .generate-btn {
@@ -224,6 +249,19 @@
             color: #94a3b8;
             font-size: 13px;
             padding-bottom: 10px;
+            letter-spacing: 0.03em;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media(max-width:700px) {
@@ -269,10 +307,10 @@
             <input id="productUrl" type="text" placeholder="Paste Flipkart Product URL here...">
         </div> -->
 
-        <div class="input-group" style="padding-bottom: 30px">
+        <div class="input-group" style="padding-bottom: 18px">
             <label>Multiple Product URLs (One Per Line)</label>
             <textarea id="bulkUrls" placeholder="Paste multiple Flipkart URLs here..."
-                style="height:200px;"></textarea>
+                style="height:160px;"></textarea>
         </div>
 
         <button class="generate-btn" onclick="generateLinks()">
@@ -284,7 +322,7 @@
             <label>Generated Review URL</label>
 
             <div style="display:flex;gap:12px;align-items:flex-start;margin-top:8px;">
-                <textarea id="output" readonly style="flex:1;height:150px;"></textarea>
+                <textarea id="output" readonly style="flex:1;height:120px;"></textarea>
 
                 <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
                     <button class="copy-btn" onclick="copyLink()" style="padding:12px 14px;min-width:140px;">📋 Copy
@@ -328,6 +366,16 @@
             }
         }
 
+        function scrollToOutput() {
+            const outputField = document.getElementById("output");
+            if (!outputField) return;
+
+            const rect = outputField.getBoundingClientRect();
+            if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                outputField.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+
         function generateLinks() {
             const urls =
                 document.getElementById("bulkUrls")
@@ -349,6 +397,7 @@
 
             const generatedText = results.join("\n\n");
             document.getElementById("output").value = generatedText;
+            scrollToOutput();
 
             navigator.clipboard.writeText(generatedText).then(() => {
                 const success = document.getElementById("successMessage");
@@ -379,6 +428,7 @@
             const success =
                 document.getElementById("successMessage");
 
+            scrollToOutput();
             success.style.display = "block";
 
             setTimeout(() => {
